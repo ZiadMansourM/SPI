@@ -4,8 +4,8 @@ reg SCLK; // TODO: make sure && clk
 reg reset;
 reg  [7:0] slaveDataToSend;
 wire [7:0] slaveDataReceived;
-wire CS;
-wire MOSI;
+reg CS;
+reg MOSI;
 wire MISO;
 
 //  REVIEWME: 
@@ -59,17 +59,21 @@ initial begin
         slaveDataToSend = testcase_slaveData[index];
         // [b]: Set Master DataToSend
         masterDataToSend = testcase_masterData[index];
+        
+        CS = 1'b1;
+        #PERIOD CS = 1'b0;
         /* [*** Intiate Transmission ***] */
-        //  REVIEWME:  [c]: Set start to 1 to initiate transmission
-        start = 1;
-        //  REVIEWME:  [d]: Wait for 1 period then set start back to 0
-        #PERIOD start = 0;
 
-        // [e]: Wait for 20 periods to make sure that the transmission is done
-        //  REVIEWME:  NOTE: 8 periods should be enough 
-        // but I am leaving room for other design choices 
-        // (such as making the SCLK slower than the clk)
+        // slaveDataToSend  >>> MISO >>> masterDataReceived
+		$monitor("MISO: %b, MOSI: %b", MISO, MOSI);
+        // masterDataToSend >>> MOSI >>> slaveDataReceived
+        
+        // [slaveDataToSend::00-001-001]  >>> [masterDataReceived]
+        // [masterDataToSend::01-010-011] >>> [slaveDataReceived]
+        
+        /* [*** END Transmission ***] */
         #(PERIOD*20);
+        CS = 1'b1;
         // [f]: Check that the master correctly received the data that should have been sent by the slave
         if(masterDataReceived == slaveDataToSend) $display("From Slave to Master: Success");
         else begin

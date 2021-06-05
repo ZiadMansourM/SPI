@@ -9,45 +9,53 @@ initial begin
 	MISO = 1'bz;
 end
 
-always @(negedge SCLK or negedge CS or posedge reset)
+always @(SCLK or CS or reset)
 begin
-	
-	if (reset == 1) begin
-		slaveDataReceived = 0;
-		counter = 0;
-		//started = 0;
-	end
-	
-	else if (SCLK == 0) //Negative Clock Edge && CS is Enabled
+
+	if (SCLK == 0) 
 	begin
-		if (CS == 0)
+		if (CS == 0 && counter <= 8 && counter > 0)
 		begin
-			if (counter <= 7)
-			begin
+			//Receive
 			slaveDataReceived = slaveDataReceived << 1;
 			slaveDataReceived[0] = MOSI;
 
-			MISO = slaveDataToSend[7 - counter];
 			counter = counter + 1;
-			end
-			/*else begin
-			started = 0;
-			end*/
 		end
+
 		else MISO = 1'bz;
 	end
 
-	//else if (CS == 0 && started == 0) //Start Transmission
-	else if (CS == 0) //Start Transmission
-	begin
-	
+	else if (SCLK == 1)
+	begin 
+
+		if (CS == 0 && counter <= 8 && counter > 0)
+		begin
+			//Send
+			MISO = slaveDataToSend[8 - counter];
+		end
+
+		else if (CS == 0 && counter <= 8) //Start Transmission
+		begin
+			counter = 1;
+			MISO = slaveDataToSend[8 - counter];
+
+		end
+
+		else if (CS == 1 && counter == 9)
+		begin
+			counter = 0;
+		end
+
+
+	end
+
+	if (reset == 1) begin
+		slaveDataReceived = 0;
 		counter = 0;
-		//MISO = slaveDataToSend[7 - counter];
-		//counter = counter + 1;
-		//started = 1;
-	
 	end
 	
 end
+
 
 endmodule
