@@ -2,11 +2,15 @@ module Slave_tb();
 
 reg SCLK; // TODO: make sure && clk
 reg reset;
-reg [7:0] slaveDataToSend;
+reg  [7:0] slaveDataToSend;
 wire [7:0] slaveDataReceived;
 wire CS;
 wire MOSI;
-wire MISO; 
+wire MISO;
+
+//  REVIEWME: 
+reg  [7:0] masterDataToSend;
+reg  [7:0] masterDataReceived;
 
 // Create a Slave Instance
 Slave mySlave(
@@ -41,7 +45,7 @@ initial begin
 	index    = 0;
 	failures = 0;
     // [2]: Intialize Inputs
-    clk   = 0;
+    SCLK  = 0;
     reset = 1;
     masterDataToSend = 0; // TODO: WHY
     slaveDataToSend  = 0; // TODO: WHY
@@ -85,6 +89,6 @@ initial begin
 end
 
 // Toggle the clock every half period
-always #(PERIOD/2) clk = ~clk;
+always #(PERIOD/2) SCLK = ~SCLK;
 
 endmodule
