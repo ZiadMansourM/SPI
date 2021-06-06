@@ -5,10 +5,8 @@ reg reset;
 reg [7:0] slaveDataToSend;
 reg CS;
 reg MOSI;
-
 wire [7:0] slaveDataReceived;
 wire MISO;
-
 //  REVIEWME: 
 reg  [7:0] masterDataToSend;
 reg  [7:0] masterDataReceived;
@@ -47,7 +45,7 @@ assign testcase_slaveData[4]  = 8'b11010111;
 integer index;    // index will be used for looping over test cases
 integer failures; // failures will store the number of failed test cases
 integer counter;
-// []:
+
 initial begin
     // [1]: Initialinzing FlowControl variables
 	index    = 0;
@@ -60,8 +58,8 @@ initial begin
     masterDataReceived = 0;
     slaveDataToSend  = 0;
 
+    // [ ___________ *** Testing *** ___________ ] 
     for(index=1; index <= TESTCASECOUNT; index=index+1) begin
-        // [*** Testing ***] 
         // ------------> TEST CASE
         $display("Running TestCase: %d", index);
         slaveDataToSend  = testcase_slaveData[index];
