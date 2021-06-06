@@ -28,20 +28,42 @@ Master maestro(
 localparam PERIOD = 20;
 
 // How many test cases we have
-localparam TESTCASECOUNT = 2;
+localparam TESTCASECOUNT = 6;
 // These wires will hold the test case data that will be transmitted by the master and slaves
 wire [7:0] testcase_masterData [1:TESTCASECOUNT];
 wire [7:0] testcase_slaveData  [1:TESTCASECOUNT][0:2];
 
+
+// populating master && Slave >> TestCaseCount = 1
 assign testcase_masterData[1]   = 8'b01010011;
 assign testcase_slaveData[1][0] = 8'b00001001;
 assign testcase_slaveData[1][1] = 8'b00100010;
 assign testcase_slaveData[1][2] = 8'b10000011;
-
+// populating master && Slave >> TestCaseCount = 2
 assign testcase_masterData[2]   = 8'b00111100;
 assign testcase_slaveData[2][0] = 8'b10011000;
 assign testcase_slaveData[2][1] = 8'b00100101;
 assign testcase_slaveData[2][2] = 8'b11000010;
+// populating master && Slave >> TestCaseCount = 3
+assign testcase_masterData[3]   = 8'b00010100;
+assign testcase_slaveData[3][0] = 8'b10011100;
+assign testcase_slaveData[3][1] = 8'b10110101;
+assign testcase_slaveData[3][2] = 8'b10011111;
+// populating master && Slave >> TestCaseCount = 4
+assign testcase_masterData[4]   = 8'b01100100;
+assign testcase_slaveData[4][0] = 8'b11100000;
+assign testcase_slaveData[4][1] = 8'b11001010;
+assign testcase_slaveData[4][2] = 8'b00101011;
+// populating master && Slave >> TestCaseCount = 5
+assign testcase_masterData[5]   = 8'b00010100;
+assign testcase_slaveData[5][0] = 8'b01100111;
+assign testcase_slaveData[5][1] = 8'b11101111;
+assign testcase_slaveData[5][2] = 8'b11110111;
+// populating master && Slave >> TestCaseCount = 6
+assign testcase_masterData[6]   = 8'b10101100;
+assign testcase_slaveData[6][0] = 8'b11001001;
+assign testcase_slaveData[6][1] = 8'b11000001;
+assign testcase_slaveData[6][2] = 8'b01100001;
 
 
 // Control Flow
