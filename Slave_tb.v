@@ -23,7 +23,7 @@ Slave mySlave(
 // Period of one clock cycle of the clk
 localparam PERIOD = 20;
 // How many test cases we have
-localparam TESTCASECOUNT = 2;
+localparam TESTCASECOUNT = 4;
 
 // These wires will hold the test case data that will be transmitted by 
 // the master and slaves
@@ -37,11 +37,11 @@ assign testcase_slaveData[1]  = 8'b00001001;
 assign testcase_masterData[2] = 8'b00111100;
 assign testcase_slaveData[2]  = 8'b10011000;
 // // populating master && Slave >> TestCaseCount = 3
-// assign testcase_masterData[3] = 8'b11010111;
-// assign testcase_slaveData[3]  = 8'b01101010;
+assign testcase_masterData[3] = 8'b11010111;
+assign testcase_slaveData[3]  = 8'b01101010;
 // // populating master && Slave >> TestCaseCount = 4
-// assign testcase_masterData[4] = 8'b10111010;
-// assign testcase_slaveData[4]  = 8'b11010111;
+assign testcase_masterData[4] = 8'b10111010;
+assign testcase_slaveData[4]  = 8'b11010111;
 
 // Control Flow
 integer index;    // index will be used for looping over test cases
@@ -55,55 +55,124 @@ initial begin
     // [2]: Intialize Inputs
     SCLK  = 0;
     reset = 1;
-    masterDataToSend = 0; // TODO: WHY
-    slaveDataToSend  = 0; // TODO: WHY
-    // [3]: Reset Now is done so set reset back to 0 after 1 clock cycle
 	#PERIOD reset = 0;
-    #30;
-    // [4]: Loop over all test cases
-    for(index=1; index <= TESTCASECOUNT; index=index+1)
-    begin
-        masterDataReceived = 0;
-        $display("Running TestCase [%d]", index);
-        // [a]: Give mySlave DataToSend
-        slaveDataToSend = testcase_slaveData[index];
-        // [b]: Set Master DataToSend
-        masterDataToSend = testcase_masterData[index];
-        
-        CS = 1'b1;
-        #PERIOD CS = 1'b0;
-        /* [*** Intiate Transmission ***] */
+    masterDataToSend = 0;
+    masterDataReceived = 0;
+    slaveDataToSend  = 0;
 
-        // slaveDataToSend  >>> MISO >>> masterDataReceived
-        // $display ("time\t MISO SCLK MOSI CS");	
-        // $monitor ("%g\t %b   %b     %b      %b", $time, MISO, SCLK, MOSI, CS);
-        // masterDataToSend >>> MOSI >>> slaveDataReceived
-        #(10*index);
-        for (counter = 0; counter<=7; counter=counter+1)
-        begin
-            MOSI = masterDataToSend[7-counter];
-            masterDataReceived[7-counter] = MISO;
-            #20;
-        end
-        // [slaveDataToSend::00-001-001]  >>> [masterDataReceived]
-        // [masterDataToSend::01-010-011] >>> [slaveDataReceived]
-        
-        /* [*** END Transmission ***] */
-        #(PERIOD*20);
-        CS = 1'b1;
-        // [f]: Check that the master correctly received the data that should have been sent by the slave
-        if(masterDataReceived == slaveDataToSend) $display("From Slave to Master: Success");
-        else begin
-            $display("From Slave to Master: Failure (Expected: %b, Received: %b)", slaveDataToSend, masterDataReceived);
-            failures = failures + 1;
-        end
-        // [g]: Check that the slave correctly received the data that should have been sent by the master 
-        if(slaveDataReceived == masterDataToSend) $display("From Master to Slave: Success");
-        else begin
-            $display("From Master to Slave: Failure (Expected: %b, Received: %b)", masterDataToSend, slaveDataReceived);
-            failures = failures + 1;
-        end
+    // [*** Testing ***] 
+    // ------------> FIRST TEST CASE
+    $display("Running TestCase 1");
+    slaveDataToSend  = testcase_slaveData[1];
+    masterDataToSend = testcase_masterData[1];
+    CS = 1'b1;
+    #PERIOD CS = 1'b0;
+    for (counter = 0; counter<=7; counter=counter+1)
+    begin
+        #PERIOD;
+        MOSI = masterDataToSend[7-counter];
+        masterDataReceived[7-counter] = MISO;
     end
+    #(PERIOD*20);
+    CS = 1'b1;
+
+    // -------------> Validation 1 Testcase
+    if(masterDataReceived == slaveDataToSend) $display("From Slave to Master: Success");
+    else begin
+        $display("From Slave to Master: Failure (Expected: %b, Received: %b)", slaveDataToSend, masterDataReceived);
+        failures = failures + 1;
+    end
+    if(slaveDataReceived == masterDataToSend) $display("From Master to Slave: Success");
+    else begin
+        $display("From Master to Slave: Failure (Expected: %b, Received: %b)", masterDataToSend, slaveDataReceived);
+        failures = failures + 1;
+    end
+
+    
+    // [*** Testing ***] 
+    // ------------> SECOND TEST CASE
+    $display("Running TestCase 2");
+    slaveDataToSend  = testcase_slaveData[2];
+    masterDataToSend = testcase_masterData[2];
+    CS = 1'b1;
+    #PERIOD CS = 1'b0;
+    for (counter = 0; counter<=7; counter=counter+1)
+    begin
+        #PERIOD;
+        MOSI = masterDataToSend[7-counter];
+        masterDataReceived[7-counter] = MISO;
+    end
+    #(PERIOD*20);
+    CS = 1'b1;
+
+    // -------------> Validation 1 Testcase
+    if(masterDataReceived == slaveDataToSend) $display("From Slave to Master: Success");
+    else begin
+        $display("From Slave to Master: Failure (Expected: %b, Received: %b)", slaveDataToSend, masterDataReceived);
+        failures = failures + 1;
+    end
+    if(slaveDataReceived == masterDataToSend) $display("From Master to Slave: Success");
+    else begin
+        $display("From Master to Slave: Failure (Expected: %b, Received: %b)", masterDataToSend, slaveDataReceived);
+        failures = failures + 1;
+    end
+
+    // [*** Testing ***] 
+    // ------------> Third TEST CASE
+    $display("Running TestCase 3");
+    slaveDataToSend  = testcase_slaveData[3];
+    masterDataToSend = testcase_masterData[3];
+    CS = 1'b1;
+    #PERIOD CS = 1'b0;
+    for (counter = 0; counter<=7; counter=counter+1)
+    begin
+        #PERIOD;
+        MOSI = masterDataToSend[7-counter];
+        masterDataReceived[7-counter] = MISO;
+    end
+    #(PERIOD*20);
+    CS = 1'b1;
+
+    // -------------> Validation 1 Testcase
+    if(masterDataReceived == slaveDataToSend) $display("From Slave to Master: Success");
+    else begin
+        $display("From Slave to Master: Failure (Expected: %b, Received: %b)", slaveDataToSend, masterDataReceived);
+        failures = failures + 1;
+    end
+    if(slaveDataReceived == masterDataToSend) $display("From Master to Slave: Success");
+    else begin
+        $display("From Master to Slave: Failure (Expected: %b, Received: %b)", masterDataToSend, slaveDataReceived);
+        failures = failures + 1;
+    end
+
+    // [*** Testing ***] 
+    // ------------> Fourth TEST CASE
+    $display("Running TestCase 4");
+    slaveDataToSend  = testcase_slaveData[4];
+    masterDataToSend = testcase_masterData[4];
+    CS = 1'b1;
+    #PERIOD CS = 1'b0;
+    for (counter = 0; counter<=7; counter=counter+1)
+    begin
+        #PERIOD;
+        MOSI = masterDataToSend[7-counter];
+        masterDataReceived[7-counter] = MISO;
+    end
+    #(PERIOD*20);
+    CS = 1'b1;
+
+    // -------------> Validation 1 Testcase
+    if(masterDataReceived == slaveDataToSend) $display("From Slave to Master: Success");
+    else begin
+        $display("From Slave to Master: Failure (Expected: %b, Received: %b)", slaveDataToSend, masterDataReceived);
+        failures = failures + 1;
+    end
+    if(slaveDataReceived == masterDataToSend) $display("From Master to Slave: Success");
+    else begin
+        $display("From Master to Slave: Failure (Expected: %b, Received: %b)", masterDataToSend, slaveDataReceived);
+        failures = failures + 1;
+    end
+
     // [5]: Display a SUCCESS or a FAILURE message based on the test OutCome
 	if(failures) $display("FAILURE: %d out of %d testcases have failed", failures, 2*TESTCASECOUNT);
 	else $display("SUCCESS: All %d testcases have been successful", 2*TESTCASECOUNT);
