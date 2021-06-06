@@ -1,8 +1,8 @@
 module Slave_tb();
 
-reg SCLK; // TODO: make sure && clk
+reg SCLK;
 reg reset;
-reg  [7:0] slaveDataToSend;
+reg [7:0] slaveDataToSend;
 reg CS;
 reg MOSI;
 
@@ -27,8 +27,8 @@ localparam TESTCASECOUNT = 4;
 
 // These wires will hold the test case data that will be transmitted by 
 // the master and slaves
-wire [7:0] testcase_masterData [1:TESTCASECOUNT]; // Master [1, 2]
-wire [7:0] testcase_slaveData  [1:TESTCASECOUNT]; // Slave  [1, 2]
+wire [7:0] testcase_masterData [1:TESTCASECOUNT];
+wire [7:0] testcase_slaveData  [1:TESTCASECOUNT];
 
 // populating master && Slave >> TestCaseCount = 1
 assign testcase_masterData[1] = 8'b01010011;
@@ -60,120 +60,37 @@ initial begin
     masterDataReceived = 0;
     slaveDataToSend  = 0;
 
-    // [*** Testing ***] 
-    // ------------> FIRST TEST CASE
-    $display("Running TestCase 1");
-    slaveDataToSend  = testcase_slaveData[1];
-    masterDataToSend = testcase_masterData[1];
-    CS = 1'b1;
-    #PERIOD CS = 1'b0;
-    for (counter = 0; counter<=7; counter=counter+1)
-    begin
-        #PERIOD;
-        MOSI = masterDataToSend[7-counter];
-        masterDataReceived[7-counter] = MISO;
-    end
-    #(PERIOD*20);
-    CS = 1'b1;
+    for(index=1; index <= TESTCASECOUNT; index=index+1) begin
+        // [*** Testing ***] 
+        // ------------> TEST CASE
+        $display("Running TestCase: %d", index);
+        slaveDataToSend  = testcase_slaveData[index];
+        masterDataToSend = testcase_masterData[index];
+        CS = 1'b1;
+        #PERIOD CS = 1'b0;
+        for (counter = 0; counter<=7; counter=counter+1)
+        begin
+            #PERIOD;
+            MOSI = masterDataToSend[7-counter];
+            masterDataReceived[7-counter] = MISO;
+        end
+        #(PERIOD*20);
+        CS = 1'b1;
 
-    // -------------> Validation 1 Testcase
-    if(masterDataReceived == slaveDataToSend) $display("From Slave to Master: Success");
-    else begin
-        $display("From Slave to Master: Failure (Expected: %b, Received: %b)", slaveDataToSend, masterDataReceived);
-        failures = failures + 1;
-    end
-    if(slaveDataReceived == masterDataToSend) $display("From Master to Slave: Success");
-    else begin
-        $display("From Master to Slave: Failure (Expected: %b, Received: %b)", masterDataToSend, slaveDataReceived);
-        failures = failures + 1;
-    end
-
-    
-    // [*** Testing ***] 
-    // ------------> SECOND TEST CASE
-    $display("Running TestCase 2");
-    slaveDataToSend  = testcase_slaveData[2];
-    masterDataToSend = testcase_masterData[2];
-    CS = 1'b1;
-    #PERIOD CS = 1'b0;
-    for (counter = 0; counter<=7; counter=counter+1)
-    begin
-        #PERIOD;
-        MOSI = masterDataToSend[7-counter];
-        masterDataReceived[7-counter] = MISO;
-    end
-    #(PERIOD*20);
-    CS = 1'b1;
-
-    // -------------> Validation 1 Testcase
-    if(masterDataReceived == slaveDataToSend) $display("From Slave to Master: Success");
-    else begin
-        $display("From Slave to Master: Failure (Expected: %b, Received: %b)", slaveDataToSend, masterDataReceived);
-        failures = failures + 1;
-    end
-    if(slaveDataReceived == masterDataToSend) $display("From Master to Slave: Success");
-    else begin
-        $display("From Master to Slave: Failure (Expected: %b, Received: %b)", masterDataToSend, slaveDataReceived);
-        failures = failures + 1;
+        // -------------> Validation
+        if(masterDataReceived == slaveDataToSend) $display("From Slave to Master: Success");
+        else begin
+            $display("From Slave to Master: Failure (Expected: %b, Received: %b)", slaveDataToSend, masterDataReceived);
+            failures = failures + 1;
+        end
+        if(slaveDataReceived == masterDataToSend) $display("From Master to Slave: Success");
+        else begin
+            $display("From Master to Slave: Failure (Expected: %b, Received: %b)", masterDataToSend, slaveDataReceived);
+            failures = failures + 1;
+        end
     end
 
-    // [*** Testing ***] 
-    // ------------> Third TEST CASE
-    $display("Running TestCase 3");
-    slaveDataToSend  = testcase_slaveData[3];
-    masterDataToSend = testcase_masterData[3];
-    CS = 1'b1;
-    #PERIOD CS = 1'b0;
-    for (counter = 0; counter<=7; counter=counter+1)
-    begin
-        #PERIOD;
-        MOSI = masterDataToSend[7-counter];
-        masterDataReceived[7-counter] = MISO;
-    end
-    #(PERIOD*20);
-    CS = 1'b1;
-
-    // -------------> Validation 1 Testcase
-    if(masterDataReceived == slaveDataToSend) $display("From Slave to Master: Success");
-    else begin
-        $display("From Slave to Master: Failure (Expected: %b, Received: %b)", slaveDataToSend, masterDataReceived);
-        failures = failures + 1;
-    end
-    if(slaveDataReceived == masterDataToSend) $display("From Master to Slave: Success");
-    else begin
-        $display("From Master to Slave: Failure (Expected: %b, Received: %b)", masterDataToSend, slaveDataReceived);
-        failures = failures + 1;
-    end
-
-    // [*** Testing ***] 
-    // ------------> Fourth TEST CASE
-    $display("Running TestCase 4");
-    slaveDataToSend  = testcase_slaveData[4];
-    masterDataToSend = testcase_masterData[4];
-    CS = 1'b1;
-    #PERIOD CS = 1'b0;
-    for (counter = 0; counter<=7; counter=counter+1)
-    begin
-        #PERIOD;
-        MOSI = masterDataToSend[7-counter];
-        masterDataReceived[7-counter] = MISO;
-    end
-    #(PERIOD*20);
-    CS = 1'b1;
-
-    // -------------> Validation 1 Testcase
-    if(masterDataReceived == slaveDataToSend) $display("From Slave to Master: Success");
-    else begin
-        $display("From Slave to Master: Failure (Expected: %b, Received: %b)", slaveDataToSend, masterDataReceived);
-        failures = failures + 1;
-    end
-    if(slaveDataReceived == masterDataToSend) $display("From Master to Slave: Success");
-    else begin
-        $display("From Master to Slave: Failure (Expected: %b, Received: %b)", masterDataToSend, slaveDataReceived);
-        failures = failures + 1;
-    end
-
-    // [5]: Display a SUCCESS or a FAILURE message based on the test OutCome
+    // Display a SUCCESS or a FAILURE Report based on the test OutCome
 	if(failures) $display("FAILURE: %d out of %d testcases have failed", failures, 2*TESTCASECOUNT);
 	else $display("SUCCESS: All %d testcases have been successful", 2*TESTCASECOUNT);
     #200 $finish;
