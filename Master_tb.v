@@ -1,22 +1,24 @@
-module Slave_tb();
+module Master_tb();
 
-reg SCLK; // TODO: make sure && clk
+reg clk; // TODO: make sure && clk
 reg reset;
-reg  [7:0] slaveDataToSend;
-reg CS;
-reg MOSI;
+reg start;
+wire SCLK;
+reg [1:0] slaveSelect;
+reg [7:0] masterDataToSend;
+reg MISO;
 
-wire [7:0] slaveDataReceived;
-wire MISO;
+wire [7:0] masterDataReceived;
+wire [0:2] CS;
+wire MOSI;
 
 //  REVIEWME: 
-reg  [7:0] masterDataToSend;
-reg  [7:0] masterDataReceived;
+reg  [7:0] slaveDataToSend;
+reg  [7:0] slaveDataReceived;
 
-// Create a Slave Instance
-Slave mySlave(
-    reset,
-	slaveDataToSend, slaveDataReceived,
+Master Maystro(
+	clk, reset,
+	start, slaveSelect, masterDataToSend, masterDataReceived,
 	SCLK, CS, MOSI, MISO
 );
 
@@ -53,25 +55,32 @@ initial begin
 	index    = 0;
 	failures = 0;
     // [2]: Intialize Inputs
-    SCLK  = 0;
+    start = 0;
+    #1 start=1;
+    clk = 0;
+    slaveSelect = 1;
     reset = 1;
+    MISO = 0;
+    // 
+    // SCLK  = 0;
     masterDataToSend = 0; // TODO: WHY
     slaveDataToSend  = 0; // TODO: WHY
+    //
     // [3]: Reset Now is done so set reset back to 0 after 1 clock cycle
 	#PERIOD reset = 0;
     #30;
     // [4]: Loop over all test cases
     for(index=1; index <= TESTCASECOUNT; index=index+1)
     begin
-        masterDataReceived = 0;
+        slaveDataReceived = 0;
         $display("Running TestCase [%d]", index);
         // [a]: Give mySlave DataToSend
         slaveDataToSend = testcase_slaveData[index];
         // [b]: Set Master DataToSend
         masterDataToSend = testcase_masterData[index];
         
-        CS = 1'b1;
-        #PERIOD CS = 1'b0;
+        // CS = 1'b1;
+        // #PERIOD CS = 1'b0;
         /* [*** Intiate Transmission ***] */
 
         // slaveDataToSend  >>> MISO >>> masterDataReceived
@@ -81,8 +90,8 @@ initial begin
         #(10*index);
         for (counter = 0; counter<=7; counter=counter+1)
         begin
-            MOSI = masterDataToSend[7-counter];
-            masterDataReceived[7-counter] = MISO;
+            MISO = slaveDataToSend[7-counter];
+            slaveDataReceived[7-counter] = MISO;
             #20;
         end
         // [slaveDataToSend::00-001-001]  >>> [masterDataReceived]
@@ -90,7 +99,7 @@ initial begin
         
         /* [*** END Transmission ***] */
         #(PERIOD*20);
-        CS = 1'b1;
+        // CS = 1'b1;
         // [f]: Check that the master correctly received the data that should have been sent by the slave
         if(masterDataReceived == slaveDataToSend) $display("From Slave to Master: Success");
         else begin
@@ -111,6 +120,6 @@ initial begin
 end
 
 // Toggle the clock every half period
-always #(PERIOD/2) SCLK = ~SCLK;
+always #(PERIOD/2) clk = ~clk;
 
 endmodule
