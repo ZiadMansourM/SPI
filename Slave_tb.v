@@ -21,7 +21,7 @@ Slave mySlave(
 // Period of one clock cycle of the clk
 localparam PERIOD = 20;
 // How many test cases we have
-localparam TESTCASECOUNT = 4;
+localparam TESTCASECOUNT = 6;
 
 // These wires will hold the test case data that will be transmitted by 
 // the master and slaves
@@ -34,12 +34,18 @@ assign testcase_slaveData[1]  = 8'b00001001;
 // populating master && Slave >> TestCaseCount = 2
 assign testcase_masterData[2] = 8'b00111100;
 assign testcase_slaveData[2]  = 8'b10011000;
-// // populating master && Slave >> TestCaseCount = 3
+// populating master && Slave >> TestCaseCount = 3
 assign testcase_masterData[3] = 8'b11010111;
 assign testcase_slaveData[3]  = 8'b01101010;
-// // populating master && Slave >> TestCaseCount = 4
+// populating master && Slave >> TestCaseCount = 4
 assign testcase_masterData[4] = 8'b10111010;
 assign testcase_slaveData[4]  = 8'b11010111;
+// populating master && Slave >> TestCaseCount = 5
+assign testcase_masterData[5] = 8'b00011010;
+assign testcase_slaveData[5]  = 8'b00000000;
+// populating master && Slave >> TestCaseCount = 6
+assign testcase_masterData[6] = 8'b11111111;
+assign testcase_slaveData[6]  = 8'b11101110;
 
 // Control Flow
 integer index;    // index will be used for looping over test cases
