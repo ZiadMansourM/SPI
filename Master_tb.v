@@ -1,121 +1,108 @@
 module Master_tb();
 
-reg clk; // TODO: make sure && clk
+reg clk;
 reg reset;
 reg start;
-wire SCLK;
 reg [1:0] slaveSelect;
 reg [7:0] masterDataToSend;
 reg MISO;
+//  REVIEWME: 
+reg  [7:0] slaveDataToSend [0:2];
+reg  [7:0] slaveDataReceived [0:2];
 
+wire SCLK;
 wire [7:0] masterDataReceived;
 wire [0:2] CS;
 wire MOSI;
 
-//  REVIEWME: 
-reg  [7:0] slaveDataToSend;
-reg  [7:0] slaveDataReceived;
 
-Master Maystro(
+// Here we create an instance of the master
+Master maestro(
 	clk, reset,
 	start, slaveSelect, masterDataToSend, masterDataReceived,
 	SCLK, CS, MOSI, MISO
 );
 
+
 // Period of one clock cycle of the clk
 localparam PERIOD = 20;
+
 // How many test cases we have
 localparam TESTCASECOUNT = 2;
+// These wires will hold the test case data that will be transmitted by the master and slaves
+wire [7:0] testcase_masterData [1:TESTCASECOUNT];
+wire [7:0] testcase_slaveData  [1:TESTCASECOUNT][0:2];
 
-// These wires will hold the test case data that will be transmitted by 
-// the master and slaves
-wire [7:0] testcase_masterData [1:TESTCASECOUNT]; // Master [1, 2]
-wire [7:0] testcase_slaveData  [1:TESTCASECOUNT]; // Slave  [1, 2]
+assign testcase_masterData[1]   = 8'b01010011;
+assign testcase_slaveData[1][0] = 8'b00001001;
+assign testcase_slaveData[1][1] = 8'b00100010;
+assign testcase_slaveData[1][2] = 8'b10000011;
 
-// populating master && Slave >> TestCaseCount = 1
-assign testcase_masterData[1] = 8'b01010011;
-assign testcase_slaveData[1]  = 8'b00001001;
-// populating master && Slave >> TestCaseCount = 2
-assign testcase_masterData[2] = 8'b00111100;
-assign testcase_slaveData[2]  = 8'b10011000;
-// // populating master && Slave >> TestCaseCount = 3
-// assign testcase_masterData[3] = 8'b11010111;
-// assign testcase_slaveData[3]  = 8'b01101010;
-// // populating master && Slave >> TestCaseCount = 4
-// assign testcase_masterData[4] = 8'b10111010;
-// assign testcase_slaveData[4]  = 8'b11010111;
+assign testcase_masterData[2]   = 8'b00111100;
+assign testcase_slaveData[2][0] = 8'b10011000;
+assign testcase_slaveData[2][1] = 8'b00100101;
+assign testcase_slaveData[2][2] = 8'b11000010;
+
 
 // Control Flow
 integer index;    // index will be used for looping over test cases
 integer failures; // failures will store the number of failed test cases
 integer counter;
-// []:
+
 initial begin
     // [1]: Initialinzing FlowControl variables
 	index    = 0;
 	failures = 0;
     // [2]: Intialize Inputs
-    start = 0;
-    #1 start=1;
-    clk = 0;
-    slaveSelect = 1;
-    reset = 1;
-    MISO = 0;
-    // 
-    // SCLK  = 0;
-    masterDataToSend = 0; // TODO: WHY
-    slaveDataToSend  = 0; // TODO: WHY
-    //
-    // [3]: Reset Now is done so set reset back to 0 after 1 clock cycle
-	#PERIOD reset = 0;
-    #30;
-    // [4]: Loop over all test cases
-    for(index=1; index <= TESTCASECOUNT; index=index+1)
-    begin
-        slaveDataReceived = 0;
-        $display("Running TestCase [%d]", index);
-        // [a]: Give mySlave DataToSend
-        slaveDataToSend = testcase_slaveData[index];
-        // [b]: Set Master DataToSend
-        masterDataToSend = testcase_masterData[index];
-        
-        // CS = 1'b1;
-        // #PERIOD CS = 1'b0;
-        /* [*** Intiate Transmission ***] */
+    clk = 0; // Initialize the clock signal
+    reset = 1; // Set reset to 1 in order to reset all the modules
+    #PERIOD reset = 0;
+    masterDataToSend = 0;
+    for(slaveSelect = 0; slaveSelect < 3; slaveSelect = slaveSelect+1) begin
+        slaveDataToSend[slaveSelect]   = 0;
+        slaveDataReceived[slaveSelect] = 0;
+    end
 
-        // slaveDataToSend  >>> MISO >>> masterDataReceived
-        // $display ("time\t MISO SCLK MOSI CS");	
-        // $monitor ("%g\t %b   %b     %b      %b", $time, MISO, SCLK, MOSI, CS);
-        // masterDataToSend >>> MOSI >>> slaveDataReceived
-        #(10*index);
-        for (counter = 0; counter<=7; counter=counter+1)
-        begin
-            MISO = slaveDataToSend[7-counter];
-            slaveDataReceived[7-counter] = MISO;
-            #20;
-        end
-        // [slaveDataToSend::00-001-001]  >>> [masterDataReceived]
-        // [masterDataToSend::01-010-011] >>> [slaveDataReceived]
+    // [ ___________ *** Testing *** ___________ ] 
+    for(index=1; index <= TESTCASECOUNT; index=index+1) begin
+        // -------------> TEST CASE
+        $display("Running TestCase: %d", index);
+        // [1]: Populate masterDataToSend && slaveDataToSend
+        masterDataToSend = testcase_masterData[index];
+        for(slaveSelect = 0; slaveSelect < 3; slaveSelect=slaveSelect+1)
+			slaveDataToSend[slaveSelect] = testcase_slaveData[index][slaveSelect];
         
-        /* [*** END Transmission ***] */
-        #(PERIOD*20);
-        // CS = 1'b1;
-        // [f]: Check that the master correctly received the data that should have been sent by the slave
-        if(masterDataReceived == slaveDataToSend) $display("From Slave to Master: Success");
-        else begin
-            $display("From Slave to Master: Failure (Expected: %b, Received: %b)", slaveDataToSend, masterDataReceived);
-            failures = failures + 1;
-        end
-        // [g]: Check that the slave correctly received the data that should have been sent by the master 
-        if(slaveDataReceived == masterDataToSend) $display("From Master to Slave: Success");
-        else begin
-            $display("From Master to Slave: Failure (Expected: %b, Received: %b)", masterDataToSend, slaveDataReceived);
-            failures = failures + 1;
+        // -------------> Transmission
+        for(slaveSelect = 0; slaveSelect < 3; slaveSelect=slaveSelect+1) begin
+            start = 1;
+            #PERIOD start = 0;
+            for (counter = 0; counter<=7; counter=counter+1)
+            begin
+                slaveDataReceived[slaveSelect][7-counter] = MOSI;
+                MISO = slaveDataToSend[slaveSelect][7-counter];
+                #PERIOD;
+            end
+            // #(PERIOD*20);
+
+            // -------------> Validation
+            if(masterDataReceived == slaveDataToSend[slaveSelect]) $display("From Slave %d to Master: Success", slaveSelect);
+            else begin
+                $display("From Slave %d to Master: Failure (Expected: %b, Received: %b)", slaveSelect, slaveDataToSend[slaveSelect], masterDataReceived);
+                failures = failures + 1;
+            end
+            // Check that the slave correctly received the data that should have been sent by the master
+            if(slaveDataReceived[slaveSelect] == masterDataToSend) $display("From Master to Slave %d: Success", slaveSelect);
+            else begin
+                $display("From Master to Slave %d: Failure (Expected: %b, Received: %b)", slaveSelect, masterDataToSend, slaveDataReceived[slaveSelect]);
+                failures = failures + 1;
+            end
         end
     end
-    // [5]: Display a SUCCESS or a FAILURE message based on the test OutCome
-	if(failures) $display("FAILURE: %d out of %d testcases have failed", failures, 2*TESTCASECOUNT);
-	else $display("SUCCESS: All %d testcases have been successful", 2*TESTCASECOUNT);
+
+    // -------------> Report
+    // Display a SUCCESS or a FAILURE message based on the test outcome
+	if(failures) $display("FAILURE: %d out of %d testcases have failed", failures, 3*2*TESTCASECOUNT);
+	else $display("SUCCESS: All %d testcases have been successful", 3*2*TESTCASECOUNT);
     #200 $finish;
 end
 
